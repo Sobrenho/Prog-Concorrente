@@ -1,3 +1,7 @@
+/* Arthur Sobrinho Ferreira da Rocha*/
+/* DRE: 122055527 */
+/* Laboratório: 2 */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>

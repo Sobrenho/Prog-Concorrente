@@ -7,8 +7,8 @@
 #include <pthread.h>
 #include <time.h>
 
-
-#define DEBUG
+//Descomentar para criar arquivo .txt de debug
+//#define DEBUG
 
 double dot_product(float* v1, float* v2, int n){
     double dotprod = 0;
@@ -55,7 +55,7 @@ void write_random_vectors(char* filename, int vec_size){
     status = fwrite(vec2, sizeof(float), vec_size, f);
     if(status < vec_size){fprintf(stderr, "--ERRO-- Falha escrevendo vetor no arquivo");exit(4);}
         
-    //Calculo do produto interno "sequencial" entre os vetores
+    //Calculo do produto interno sequencial entre os vetores
     double dotprod = dot_product(vec1,vec2, vec_size);
 
     //Escrever produto interno no arquivo
@@ -97,8 +97,6 @@ int main(int argc, char* argv[]){
     char* arquivo_saida = argv[2];
 
     write_random_vectors(arquivo_saida, size);
-
-
-
- return 0;
+    
+    return 0;
 }

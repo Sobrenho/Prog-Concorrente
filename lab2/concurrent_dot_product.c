@@ -26,7 +26,7 @@ typedef struct {
             vec1: parte do primeiro vetor que será multiplicada pela thread
             vec2: parte do primeiro vetor que será multiplicada pela thread
             size: tamanho do subvetor
-            dotprod: armazenar retorno do produto interno parcial
+            dotprod: Não utilizado
 */
 
 
@@ -50,6 +50,7 @@ Vectors* getVectors(char* filename){
     vectors->size = size;
     vectors->vec1 = (float*) malloc(sizeof(float)*size);
     vectors->vec2 = (float*) malloc(sizeof(float)*size);
+
     if(!vectors->vec1 || !vectors->vec2){fprintf(stderr, "--ERRO-- Malloc Vetores");exit(60);}
     
     //leitura dos vetores
@@ -77,6 +78,7 @@ void *DotProdConc(void* arg){
         fprintf(stderr, "Erro Alocando retorno para thread"); 
         pthread_exit(NULL);
     }
+
     *ret = 0;
 
     for(int i=0; i < vecs->size; i++){
@@ -143,18 +145,16 @@ int main(int argc, char* argv[]){
         if(pthread_join(idthreads[i], (void**) &dotprod_parcial)){
             fprintf(stderr, "--ERRO-- pthread_join da thread %d\n", i); return 3;
         }
-        //printf("\ndotprod_parcial: %f\n", *dotprod_parcial);
+
         dotprod += *((float*) dotprod_parcial);
 
         free(dotprod_parcial);
-
     }
 
     erro = comparacaoRelativa(dotprod, vecs->dotprod);  
 
     printf("Produto Interno Inicial: %.15f\nProduto Interno Concorrente: %.15f\nErro Relativo: %.15f\n",
         vecs->dotprod, dotprod, erro);
-
 
     return 0;
 }   

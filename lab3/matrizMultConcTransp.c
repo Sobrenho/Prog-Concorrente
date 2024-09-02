@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
-#include "helper_funcs.h"
-#include "exec_time.h"
+#include "cods-lab3/helper_funcs.h"
+#include "cods-lab3/exec_time.h"
 
 typedef struct{
    FloatMatriz* fm1;

@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Function to run matrix multiplication with different thread counts
 run_matmultconc () {
     local threads=$1
     local binary=$2
@@ -16,7 +15,6 @@ run_matmultconc () {
     echo "-----------------------------"
 }
 
-# Main loop
 for j in 500 1000 2000; do
     echo "Gerando Matrizes $j $j"
     echo
@@ -32,9 +30,8 @@ for j in 500 1000 2000; do
     done
     echo "-----------------------------"
 
-    # Run with different thread counts for normal and transposed binaries
     for threads in 1 2 4 8; do
-        run_matmultconc $threads "normal"
+        run_matmultconc $threads "original"
         run_matmultconc $threads "transposto"
     done
 

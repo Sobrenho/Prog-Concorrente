@@ -1,11 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "helper_funcs.h"
-#include "exec_time.h"
-
-// Usar excel para graficos
-// No concorrente classificar entre linear, sublinear e superlinear
-//Criar tabelas com Aceleracao e ..
+#include "cods-lab3/helper_funcs.h"
+#include "cods-lab3/exec_time.h"
 
 
 FloatMatriz*  matriz_mult_seq(FloatMatriz* m1, FloatMatriz* m2){

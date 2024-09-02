@@ -1,11 +1,10 @@
+// Ideia dada pelo Gabriel Leão
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
 #include "helper_funcs.h"
 #include "exec_time.h"
-// Usar excel para graficos
-// No concorrente classificar entre linear, sublinear e superlinear
-//Criar tabelas com Aceleracao e ..
 
 typedef struct{
    FloatMatriz* fm1;
@@ -16,23 +15,44 @@ typedef struct{
 
 }t_args;
 
-void *thread_dot_prod_original(void* arg){
+
+FloatMatriz* transpor(FloatMatriz* fm){
+
+	FloatMatriz* res = (FloatMatriz*) malloc(sizeof(FloatMatriz));
+	if(!res){fprintf(stderr,"--ERRO-- Malloc struct floatmatriz\n");exit(501);} 
+
+	res->M = fm->N;
+	res->N = fm->M;
+
+	res->matriz = (float*) malloc(sizeof(float)*fm->N*fm->M);
+	if(!res->matriz){fprintf(stderr,"--ERRO-- Malloc resposta matriz transposta\n");exit(501);} 
+
+	for(int i=0; i< fm->N; i++){
+		
+		for(int j=0; j < fm->M; j++){
+		
+			res->matriz[j*res->M + i] = fm->matriz[i*fm->M + j];
+		
+		}
+	}
+
+	return res;
+}
+
+void *thread_dot_prod_transposto(void* arg){
 	float val;
 	t_args* args = (t_args*) arg;
-
-
-	int total_colunas = args->fm3->M;
 
 	for(int k = args->idx_ini; k < args->idx_fim; k++){
 
 		val = 0;
 
-		int linha_atual  = k / total_colunas; 
-		int coluna_atual = k % total_colunas;
+		int linha_atual  = k / args->fm3->M; 
+		int coluna_atual = k % args->fm3->M;
 
-		for(int i = 0; i < args->fm1->M ; i++){ //iterando no tamanho do vetor do dot product
+		for(int i = 0; i < args->fm1->M ; i++){ 
 
-			val += args->fm1->matriz[linha_atual * args->fm1->M + i]  * args->fm2->matriz[args->fm2->M * i  + coluna_atual ];
+			val += args->fm1->matriz[linha_atual * args->fm1->M + i]  * args->fm2->matriz[coluna_atual * args->fm2->M + i];
 
 		}
 
@@ -45,9 +65,9 @@ void *thread_dot_prod_original(void* arg){
 
 
 
-FloatMatriz*  conc_matriz_mult(FloatMatriz* m1, FloatMatriz* m2, int nthreads){
+FloatMatriz*  conc_matriz_mult_transposto(FloatMatriz* m1, FloatMatriz* m2, int nthreads){
 	if(m1->M != m2->N){
-		fprintf(stderr, "--ERRO-- Dimensoes incompativeis\n");
+		fprintf(stderr, "--ERRO-- Dimensões incompatíveis\n");
 		return NULL;
 	}
 	
@@ -92,7 +112,7 @@ FloatMatriz*  conc_matriz_mult(FloatMatriz* m1, FloatMatriz* m2, int nthreads){
 			arg->idx_fim++;
 		}
 
-		if(pthread_create(&pthread_ids[i], NULL, thread_dot_prod_original, (void*)arg)){
+		if(pthread_create(&pthread_ids[i], NULL, thread_dot_prod_transposto, (void*)arg)){
             fprintf(stderr, "--ERRO-- pthread create: thread %d\n", i);
         }
 
@@ -109,28 +129,31 @@ FloatMatriz*  conc_matriz_mult(FloatMatriz* m1, FloatMatriz* m2, int nthreads){
 	return res;
 }
 
-
 int main(int argc, char* argv[]){
 	FloatMatriz *m1, *m2, *m3;
     int nthreads;
 	double iniciacao, iniciacao_fim, processamento, processamento_fim, finalizacao, finalizacao_fim;
 
-	GET_TIME(iniciacao);
+    GET_TIME(iniciacao);
+
 	if(argc < 5){
 		printf("Entrada: .\\<nome do programa> <numero de threads> <arquivo da matriz 1> <arquivo da matriz 2> <arquivo de saida>\n");
 		return 1;
 	}
 	
     nthreads = atoi(argv[1]);
+
 	m1 = pegar_matriz(argv[2]);
 	m2 = pegar_matriz(argv[3]);
+	m2 = transpor(m2);
+
 
 	GET_TIME(iniciacao_fim);
     printf("Tempo de Iniciacao :%f\n", iniciacao_fim - iniciacao);
     GET_TIME(processamento);
 
-	m3 = conc_matriz_mult(m1,m2, nthreads);
-	if(m3 == NULL){return 2;}
+	m3 = conc_matriz_mult_transposto(m1,m2, nthreads);
+	if(m3 == NULL){return 12;}
 
 	GET_TIME(processamento_fim);
 	printf("Tempo de Execucao: %f\n", processamento_fim - processamento);
@@ -144,6 +167,6 @@ int main(int argc, char* argv[]){
 
     GET_TIME(finalizacao_fim);
     printf("Tempo de Finalizacao: %f\n", finalizacao_fim - finalizacao);
-	
+
 	return 0;
 }

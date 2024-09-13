@@ -9,7 +9,8 @@
 #include <stdlib.h> 
 #include <pthread.h>
 
-#define Multiplos10 20
+#define NUM 10 // Definição do número que printaremos os múltiplos
+#define MULTIPLOS 20 //Quantidade de múltiplos que será printada na tela
 
 long int multiplos_printados = 0;
 long int soma = 0; 
@@ -26,9 +27,13 @@ void *ExecutaTarefa (void *arg) {
 
     pthread_mutex_lock(&mutex);
 
+    //Enquanto soma for o próximo multiplo de 10 a ser impresso e ainda existem prints a serem feitos
+    while(multiplos_printados*NUM == soma && soma < NUM*(MULTIPLOS)){ 
 
-    while(multiplos_printados*10 == soma && soma < 10*(Multiplos10)){ //Entra no while soma for o próximo multiplo de 10 e ainda existem prints a serem feitos 
+        //Indicação para thread extra que chegamos em um múltiplo de 10 para printar
         pthread_cond_signal(&print_multiplo);
+
+        //Auto-bloqueio até printar o múltiplo de 10 atual
         pthread_cond_wait(&sum_thread, &mutex);
     }
 
@@ -47,14 +52,16 @@ void *extra (void *args) {
 
   printf("Extra : esta executando...\n");
 
-  while (multiplos_printados < Multiplos10) {
+  //Enquanto não chegamos no último múltiplo para ser printado
+  while (multiplos_printados < MULTIPLOS) {
     pthread_mutex_lock(&mutex);
 
-    if (soma == 10*multiplos_printados){ //Printamos somente se for o próximo múltiplo de 10
+    //Printamos somente se for o próximo múltiplo de 10
+    if (soma == NUM*multiplos_printados){
        printf("soma = %ld \n", soma);
        multiplos_printados++;
     }
-    else{
+    else{ //O valor de soma não é o múltiplo de 10 ou acabamos de printar um múltiplo de 10 
         pthread_cond_broadcast(&sum_thread);
         pthread_cond_wait(&print_multiplo, &mutex);
     }
@@ -63,6 +70,7 @@ void *extra (void *args) {
   }
 
   pthread_cond_broadcast(&sum_thread);  
+  
   printf("Extra : terminou!\n");
   pthread_exit(NULL);
 }

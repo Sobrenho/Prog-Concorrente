@@ -27,6 +27,44 @@ Nos testes que realizei minha implementação teve uma melhora considerável em 
 
 
 
+## Log de execução
+```
+Novo leitor!
+-------
+Leitores:2
+Escritores:0
+Escritores em espera:0
+-------
+
+Finalizacao leitor!
+-------
+Leitores:1
+Escritores:0
+Escritores em espera:0
+-------
+
+Escritor em espera!
+-------
+Leitores:1
+Escritores:0
+Escritores em espera:1
+-------
+
+Novo escritor!
+-------
+Leitores:1
+Escritores:1
+Escritores em espera:0
+-------
+
+Finalizacao escritor!
+-------
+Leitores:1
+Escritores:0
+Escritores em espera:0
+-------
+```
+
 
 ## Exemplos de tempo de execução:
 

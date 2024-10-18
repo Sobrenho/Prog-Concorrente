@@ -3,12 +3,12 @@
 #include <semaphore.h>
 #include <pthread.h>
 
-#define N 200
+#define N 500
 #define NTHREADS 3
 #define N2 2*N
 
 char buffer1[N];
-char buffer2[N2]; //Podemos mudar isso
+char buffer2[N2]; 
 
 sem_t sem_buffer1_vazio;
 sem_t sem_buffer1;
@@ -18,6 +18,9 @@ sem_t sem_buffer2;
 pthread_mutex_t mutex;
 
 char* filename;
+int file_done=0;
+int fim_buffer2=0;
+pthread_mutex_t mutex;
 
 void *carrega_buffer1(void* arg){
 	size_t chars_read=0;
@@ -30,9 +33,12 @@ void *carrega_buffer1(void* arg){
 		sem_wait(&sem_buffer1_vazio);
 
 		chars_read = fread(&buffer1, sizeof(char), N-1 ,f);
-		printf("chars_read: %d\n", chars_read);
 		if(chars_read < N-1){
 			buffer1[chars_read+1] = '\0';
+			pthread_mutex_lock(&mutex);
+			file_done=1;
+			pthread_mutex_unlock(&mutex);
+			sem_post(&sem_buffer1);
 			break;	
 		}
 
@@ -50,6 +56,7 @@ void *carrega_buffer2(void* arg){
 	int k=0; // armazena qual linha estamos atualmente.
 	int count=0; //contador de caracteres lidos na linha atual
 	int offset = 0; // armazena offset causado pela inserção de \n
+	int char_count=0;
 	while(1){
 
 		sem_wait(&sem_buffer1);
@@ -57,11 +64,9 @@ void *carrega_buffer2(void* arg){
 
 		offset = 0;
 		for(int i=0; i<N-1;i++){
-
-			if(buffer1[i] == '\0'){
-
-				buffer2[i+offset] = '\0';
-				buffer2[i+offset+1] = '\0';
+			
+			if(buffer1[i] == '\0'){ //Não tem mais caracter
+				buffer2[i+offset] = '\0'; //A linha deve acabar aqui
 				break;
 			}
 
@@ -70,27 +75,37 @@ void *carrega_buffer2(void* arg){
 				offset++;
 				k++;
 				count=0;
+
+					char_count++;
 			
 			}else if(k > 10 && count % 10 == 0){
 				buffer2[i+offset] = '\n';
 				offset++;
 				count=0;
+
+					char_count++;
 			}
 
 			buffer2[i+offset] = buffer1[i];
+					char_count++;
 			count++;
 		}
 
 		buffer2[N+offset] = '\0';
-		
-		for(int j = N+offset+1; j<N2; j++){ //limpar o resto do buffer
-			buffer2[j] = 0;
-		}
-
 		sem_post(&sem_buffer1_vazio);
 		sem_post(&sem_buffer2);
 
+		pthread_mutex_lock(&mutex);
+		if(file_done){
+			pthread_mutex_unlock(&mutex);
+			break;
+		}
+		pthread_mutex_unlock(&mutex);
 	}
+
+	pthread_mutex_lock(&mutex);
+	fim_buffer2 = 1;
+	pthread_mutex_unlock(&mutex);
 
 	pthread_exit(NULL);
 
@@ -98,17 +113,21 @@ void *carrega_buffer2(void* arg){
 
 
 void *printa_buffer2(void* arg){
-	int fim = 0;
-	int chars_printed;
+	int chars_read=0;
 	while(1){
 		sem_wait(&sem_buffer2);
 
-		chars_printed = printf("%s", buffer2); // ler até '\0'
-		if(buffer2[chars_printed] == '\0'){ //próximo caracter depois do \0 for \0 também, fim!
+		chars_read += printf("%s", buffer2); // ler até '\0'
+		
+		sem_post(&sem_buffer2_vazio);
+
+		
+		pthread_mutex_lock(&mutex);
+		if(fim_buffer2){
+			pthread_mutex_unlock(&mutex);
 			break;
 		}
-			
-		sem_post(&sem_buffer2_vazio);
+		pthread_mutex_unlock(&mutex);
 	}
 
 	pthread_exit(NULL);

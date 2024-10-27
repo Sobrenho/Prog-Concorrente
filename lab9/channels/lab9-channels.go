@@ -6,25 +6,21 @@ import(
 )
 
 func routine(c chan string){
-	var msg string
 
-	msg = <- c
-	fmt.Println(msg)
+	fmt.Println(<- c)
 
 	c <- "Oi Main, bom dia, tudo bem?"
 
-	msg = <- c
-	fmt.Println(msg)
+	fmt.Println(<- c)
 
 	c <- "Certo, entendido."
 	
-	msg = <-c
-	fmt.Println("finalizando ...")
-	c <- msg 
+	<-c
+	fmt.Println("[Goroutine] finalizando ... ")
+	c <- " "
 }
 
 func main(){
-	var msg string
 
 	c := make(chan string)
 
@@ -32,18 +28,15 @@ func main(){
 
 	c <- "Olá, Goroutine, bom dia!"
 
-	msg = <-c
-	fmt.Println(msg)
+	fmt.Println(<-c)
 
 	c <- "Tudo bem! Vou terminar, tá?"
 
-	msg = <-c
-	fmt.Println(msg)
+	fmt.Println(<-c)
 
 	c <- " " //Garantir que a thread finalize antes da main
-
-	fmt.Println("finalizando ...")
-
 	<- c
+	fmt.Println("[Main] finalizando ... ")
+
 
 }

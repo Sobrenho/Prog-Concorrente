@@ -1,0 +1,8 @@
+Lab 9 - Programação Concorrente
+
+Arthur Sobrinho Ferreira da Rocha
+122055527
+
+# Atividade 2
+2.2 - Ler do canal sem buffer é uma operação bloqueante, então a main só finalizará quando ler a mensagem enviada pela thread.
+2.3 - Como a main não é mais bloqueada pelo canal, finaliza sua execução imprimindo o valor default de `msg`.
